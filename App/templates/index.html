@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malaria Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+        }
+        .drop-zone {
+            width: 100%;
+            max-width: 400px;
+            padding: 50px;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            background-color: #fafafa;
+            cursor: pointer;
+            margin: 20px auto;
+            position: relative;
+        }
+        .drop-zone:hover {
+            background-color: #f0f0f0;
+        }
+        .drop-zone input {
+            display: none;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .result img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .uploaded-image {
+            max-width: 100%;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <h1>Malaria Detector</h1>
+        <h2>MIT Professional: Capstone Project</h2>
+        <div class="result" id="result"></div>
+        <div class="drop-zone" id="drop-zone">
+            <p>Drag & drop an image here or click to upload</p>
+            <input type="file" id="file-input">
+        </div>
+    </div>
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const resultDiv = document.getElementById('result');
+        const containerDiv = document.getElementById('container');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.backgroundColor = '#f0f0f0';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.backgroundColor = '#fafafa';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.backgroundColor = '#fafafa';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                uploadFile(fileInput.files[0]);
+            }
+        });
+
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultDiv.innerHTML = `<img src="/uploads/${data.filename}" alt="Uploaded Image" class="uploaded-image"><p>${data.result}</p>`;
+                if (data.result === 'Malaria detected') {
+                    containerDiv.style.backgroundColor = '#8B0000'; // Dark red
+                    resultDiv.style.color = '#fff';
+                } else {
+                    containerDiv.style.backgroundColor = '#008000'; // Green
+                    resultDiv.style.color = '#fff';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultDiv.textContent = 'An error occurred';
+            });
+        }
+    </script>
+</body>
+</html>
